@@ -49,21 +49,18 @@ shellshock
     例(WSL内のbash)
     - `cd ~/`
     - `tar -xzvf /mnt/c/Users/[ユーザー名]/Downloads/shellshock-lab.tar.gz`
-5. attack/victimを起動 \
+5. 攻撃用コンテナ、被攻撃用コンテナを起動 \
     例(WSL内のbash)
     - `cd ~/shellshock`
     - `docker-compose build`
     - `docker-compose up -d`
-6. snort-dockerフォルダのDockerfile内、監視するブリッジ名を自分の環境に合わせて変更\
-    例(WSL内のbash)
+6. 監視用コンテナ\
+    例(新しいウィンドウとして開いたWSL内のbash)
     - (新しいWSLウィンドウを開く)
     - `cd ~/snort-docker`
-    - `ip a` (br-...という名前のインターフェース名をコピー)
-    - `nano Dockerfile`
-        - 最終行、CMD内の"br-..."をコピーしたものに変更
     - `docker build -t monitor-snort .`
     - `docker run -it --rm --network=host --cap-add=NET_ADMIN --cap-add=NET_RAW monitor-snort`
-7. 攻撃コンテナの中に入る、攻撃を行う \
+7. 攻撃コンテナの中に入り攻撃を行う \
     例(snortではないの方のWSL内bash)
     - `docker exec -it attacker-msf /bin/bash`
     - (攻撃コンテナの中に入り、bashが起動)
@@ -73,3 +70,5 @@ shellshock
     - `docker exec -it victim-shellshock /bin/bash`
     - (被攻撃コンテナの中に入る)
     - `cat /tmp/shellshock.txt`(vulnerableと出力されればcurlによりファイルが生成されている=攻撃が成功している)
+
+linux環境以外ではブリッジ名の固定が失敗する可能性があり、その場合は snort-docker/Dockerfile の最終行、isolated_netを環境に合わせて変更することが必要

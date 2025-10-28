@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  victim:
+    build: ./victim
+    container_name: victim-shellshock
+    ports:
+      - "8000:8000"
+    networks:
+      - isolated_net
+
+  attacker:
+    build: ./attacker
+    container_name: attacker-msf
+    tty: true
+    stdin_open: true
+    depends_on:
+      - victim
+    networks:
+      - isolated_net
+
+networks:
+  isolated_net:
+    internal: true
+    driver_opts:
+      com.docker.network.bridge.name: isolated_net
